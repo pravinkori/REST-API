@@ -2,18 +2,26 @@ const express = require("express");
 
 const app = express();
 
+const courses = [
+    {id: 1, name: 'Java'},
+    {id: 2, name: 'C++'},
+    {id: 3, name: 'Python'},
+];
+
 app.get('/', (req, res) => {
     res.send("Hello World!!");
 });
 
 // This endpoint is to get all the courses
 app.get('/api/courses', (req, res) => {
-    res.send(["Java", "JavaScript", "Python"]);
+    res.send(courses);
 });
 
 // This endpoint is to get single courses by id with the help of Route parameter
 app.get('/api/courses/:id', (req, res) => {
-    res.send(req.params.id);
+    const course = courses.find(c => c.id === parseInt(req.params.id));
+    if(!course) res.status(404).send('The course you\'re looking for was not found.');
+    res.send(course);
 });
 
 app.get('/api/courses/:course/:id', (req, res) => {
