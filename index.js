@@ -50,9 +50,22 @@ app.post('/api/courses', (req, res) => {
     res.send(course);
 });
 
-app.get('/api/courses/:course/:id', (req, res) => {
-    res.send(req.params)
-})
+app.put('/api/courses/:id', (req, res) => {
+    const course = courses.find(c => c.id === parseInt(req.params.id));
+    if (!course) res.status(404).send('The course you\'re looking for was not found.');
+
+    const schema = Joi.object({
+        name: Joi.string().min(3).required()
+    });
+    const result = schema.validate(req.body);
+    if (result.error) {
+        res.status(400).send(result.error.details[0].message);
+        return;
+    }
+
+    course.name = req.body.name;
+    res.send(course);
+});
 
 // Query string parameter
 app.get('/api/courses/:course/:id', (req, res) => {
