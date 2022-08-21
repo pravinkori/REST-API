@@ -30,15 +30,21 @@ app.get('/api/courses/:id', (req, res) => {
 
 app.post('/api/courses', (req, res) => {
 
-    const schema = Joi.object({
-        name: Joi.string().min(3).required()
-    });
-    const result = schema.validate(req.body);
-    console.log(result);
+    // const schema = Joi.object({
+    //     name: Joi.string().min(3).required()
+    // });
+    // const result = schema.validate(req.body);
+    // console.log(result);
+    // 
+    // if(result.error) {
+    //     res.status(400).send(result.error.details[0].message);
+    //     return;
+    // }
 
     // Validation logic for name input
-    if(result.error) {
-        res.status(400).send(result.error.details[0].message);
+    const { error } = validateCourse(req.body);
+    if (error) {
+        res.status(400).send(error.details[0].message);
         return;
     }
 
@@ -54,18 +60,31 @@ app.put('/api/courses/:id', (req, res) => {
     const course = courses.find(c => c.id === parseInt(req.params.id));
     if (!course) res.status(404).send('The course you\'re looking for was not found.');
 
-    const schema = Joi.object({
-        name: Joi.string().min(3).required()
-    });
-    const result = schema.validate(req.body);
-    if (result.error) {
-        res.status(400).send(result.error.details[0].message);
+    // const schema = Joi.object({
+    //     name: Joi.string().min(3).required()
+    // });
+    // const result = schema.validate(req.body);
+
+    // const result = validateCourse(req.body);
+
+    // Object destructuring. Following line is equivalent to "result.error"
+    const { error } = validateCourse(req.body);
+    if (error) {
+        res.status(400).send(error.details[0].message);
         return;
     }
 
     course.name = req.body.name;
     res.send(course);
 });
+
+// Validation function
+function validateCourse(course) {
+    const schema = Joi.object({
+        name: Joi.string().min(3).required()
+    });
+    return schema.validate(course);
+}
 
 // Query string parameter
 app.get('/api/courses/:course/:id', (req, res) => {
