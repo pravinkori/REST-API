@@ -7,13 +7,19 @@ const authenticator = require('./authenticator');
 
 const app = express();
 
+// console.log(`NODE_ENV: ${ process.env.NODE_ENV }`);
+console.log(`app: ${ app.get('env') }`);
+
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(helmet());
 
 // HTTP request logger middleware
-app.use(morgan('tiny'));
+if (app.get('env') === 'development') {
+    app.use(morgan('tiny'));
+    console.log('Morgan enabled...');
+}
 
 app.use(logger);
 
