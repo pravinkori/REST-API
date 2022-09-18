@@ -1,10 +1,21 @@
 const express = require("express");
 const Joi = require("joi");
+const logger = require('./logger');
+const authenticator = require('./authenticator');
 
 const app = express();
 
 // Middleware
 app.use(express.json());
+
+app.use(logger);
+
+app.use(authenticator);
+
+// app.use(function (req, res, next) {
+//     console.log("Authenticating...");
+//     next();
+// })
 
 const courses = [
     {id: 1, name: 'Java'},
