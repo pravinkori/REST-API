@@ -1,3 +1,5 @@
+const morgan = require('morgan');
+const helmet = require('helmet');
 const express = require("express");
 const Joi = require("joi");
 const logger = require('./logger');
@@ -7,6 +9,11 @@ const app = express();
 
 // Middleware
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(helmet());
+
+// HTTP request logger middleware
+app.use(morgan('tiny'));
 
 app.use(logger);
 
