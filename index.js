@@ -18,7 +18,7 @@ const app = express();
 
 // Middleware
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: false }));
 app.use(express.static('public'));
 app.use(helmet());
 app.use('/api/courses', courses);
