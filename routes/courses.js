@@ -1,25 +1,65 @@
+const mongoose = require('mongoose');
 const express = require('express');
+const Joi = require("joi");
 const router = express.Router();
 
-const courses = [
-    { id: 1, name: 'Java' },
-    { id: 2, name: 'C++' },
-    { id: 3, name: 'Python' },
-];
+const courseSchema = new mongoose.Schema({
+    name: {
+        type: String,
+        required: true,
+        minlength: 5,
+        maxlength: 255
+    },
+    category: {
+        type: String,
+        required: true,
+        enum: ['web', 'mobile', 'network'],
+        lowercase: true
+    },
+    author: String,
+    tags: {
+        type: Array,
+        validate: {
+            validator: function (v) {
+                return new Promise((resolve, reject) => {
+                    setTimeout(() => {
+                        const result = v && v.length > 0;
+                        resolve(result)
+                    }, 4000);
+                });
+            },
+            message: 'A course should have at least one tag.'
+        }
+    },
+    date: {
+        type: Date,
+        default: Date.now
+    },
+    isPublished: Boolean,
+    price: {
+        type: Number,
+        min: 10,
+        max: 200,
+        required: function () { return this.isPublished; }
+    }
+});
+
+const Course = mongoose.model('Course', courseSchema);
 
 // This endpoint is to get all the courses
-router.get('/', (req, res) => {
-    res.send(courses);
+router.get('/', async(req, res) => {
+    const course = await Course.find().sort('name');
+    res.send(course);
 });
 
 // This endpoint is to get single courses by id with the help of Route parameter
-router.get('/:id', (req, res) => {
-    const course = courses.find(c => c.id === parseInt(req.params.id));
+router.get('/:id', async(req, res) => {
+    const course = await Course.findById(req.params.id)
     if (!course) return res.status(404).send('The course you\'re looking for was not found.');
     res.send(course);
 });
 
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
 
     // const schema = Joi.object({
     //     name: Joi.string().min(3).required()
@@ -36,17 +76,21 @@ router.post('/', (req, res) => {
     const { error } = validateCourse(req.body);
     if (error) return res.status(400).send(error.details[0].message);
 
-
-    const course = {
-        id: courses.length + 1,
+    let course = new Course({
         name: req.body.name
-    };
-    courses.push(course);
+    });
+    course = await course.save();
     res.send(course);
 });
 
-router.put('/:id', (req, res) => {
-    const course = courses.find(c => c.id === parseInt(req.params.id));
+router.put('/:id', async (req, res) => {
+    const { error } = validateCourse(req.body);
+    if (error) return res.status(400).send(error.details[0].message);
+
+    const course = await Course.findByIdAndUpdate(req.params.id, 
+        { name: req.body.name }, 
+        { new: true });
+    
     if (!course) return res.status(404).send('The course you\'re looking for was not found.');
 
     // const schema = Joi.object({
@@ -57,22 +101,16 @@ router.put('/:id', (req, res) => {
     // const result = validateCourse(req.body);
 
     // Object destructuring. Following line is equivalent to "result.error"
-    const { error } = validateCourse(req.body);
-    if (error) return res.status(400).send(error.details[0].message);
 
-    course.name = req.body.name;
     res.send(course);
 });
 
-router.delete('/:id', (req, res) => {
-    const course = courses.find(c => c.id === parseInt(req.params.id));
+router.delete('/:id', async (req, res) => {
+    const course = await Course.findByIdAndRemove(req.params.id);
+    
     if (!course) return res.status(404).send('The course you\'re looking for was not found.');
 
-    const index = courses.indexOf(course);
-    courses.splice(index, 1);
-
     res.send(course);
-
 });
 
 // Validation function

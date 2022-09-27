@@ -4,7 +4,8 @@ const config = require('config');
 const morgan = require('morgan');
 const helmet = require('helmet');
 const express = require("express");
-const Joi = require("joi");
+// const Joi = require("joi");
+const mongoose = require('mongoose');
 const logger = require('./middleware/logger');
 const courses = require('./routes/courses');
 const home = require('./routes/home');
@@ -34,6 +35,10 @@ if (app.get('env') === 'development') {
     startupDebugger('Morgan enabled...');
     // console.log('Morgan enabled...');
 }
+
+mongoose.connect(`${config.get('database')}`)
+    .then(() => console.log('Connected to MongoDB..'))
+    .catch(err => console.log('Could not connect to MongoDB...', err));
 
 dbDebugger('Connectd to the database...');
 
