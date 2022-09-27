@@ -59,7 +59,7 @@ router.get('/:id', async(req, res) => {
     res.send(course);
 });
 
-router.post('/', async(req, res) => {
+router.post('/', async  (req, res) => {
 
     // const schema = Joi.object({
     //     name: Joi.string().min(3).required()
@@ -73,7 +73,7 @@ router.post('/', async(req, res) => {
     // }
 
     // Validation logic for name input
-    const { error } = validateCourse(req.body);
+    const { error } = await validateCourse(req.body);
     if (error) return res.status(400).send(error.details);
 
     let course = new Course({
@@ -121,7 +121,12 @@ router.delete('/:id', async (req, res) => {
 // Validation function
 function validateCourse(course) {
     const schema = Joi.object({
-        name: Joi.string().min(3).required()
+        name: Joi.string().min(3).required(),
+        category: Joi.string().min(3).max(9).required(),
+        author: Joi.string().required(),
+        tags: Joi.array().min(1).max(3).items(Joi.string()),
+        isPublished: Joi.boolean(),
+        price: Joi.number().required()
     });
     return schema.validate(course);
 }
