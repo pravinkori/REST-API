@@ -5,7 +5,7 @@
 node_modules
 
 # Ignore config folder
-config
+/config
 
 # Ignore all text files
 *.txt
