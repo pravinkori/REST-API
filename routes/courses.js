@@ -1,50 +1,7 @@
-const mongoose = require('mongoose');
+const {Course, validate} = require('../models/courses')
 const express = require('express');
-const Joi = require("joi");
 const router = express.Router();
 
-const courseSchema = new mongoose.Schema({
-    name: {
-        type: String,
-        required: true,
-        minlength: 5,
-        maxlength: 255
-    },
-    category: {
-        type: String,
-        required: true,
-        enum: ['web', 'mobile', 'network'],
-        lowercase: true
-    },
-    author: String,
-    tags: {
-        type: Array,
-        validate: {
-            validator: function (v) {
-                return new Promise((resolve, reject) => {
-                    setTimeout(() => {
-                        const result = v && v.length > 0;
-                        resolve(result)
-                    }, 4000);
-                });
-            },
-            message: 'A course should have at least one tag.'
-        }
-    },
-    date: {
-        type: Date,
-        default: Date.now
-    },
-    isPublished: Boolean,
-    price: {
-        type: Number,
-        min: 10,
-        max: 200,
-        required: function () { return this.isPublished; }
-    }
-});
-
-const Course = mongoose.model('Course', courseSchema);
 
 // This endpoint is to get all the courses
 router.get('/', async(req, res) => {
@@ -73,7 +30,7 @@ router.post('/', async  (req, res) => {
     // }
 
     // Validation logic for name input
-    const { error } = await validateCourse(req.body);
+    const { error } = await validate(req.body);
     if (error) return res.status(400).send(error.details);
 
     let course = new Course({
@@ -89,7 +46,7 @@ router.post('/', async  (req, res) => {
 });
 
 router.put('/:id', async (req, res) => {
-    const { error } = validateCourse(req.body);
+    const { error } = validate(req.body);
     if (error) return res.status(400).send(error.details[0].message);
 
     const course = await Course.findByIdAndUpdate(req.params.id, 
@@ -117,18 +74,5 @@ router.delete('/:id', async (req, res) => {
 
     res.send(course);
 });
-
-// Validation function
-function validateCourse(course) {
-    const schema = Joi.object({
-        name: Joi.string().min(3).required(),
-        category: Joi.string().min(3).max(9).required(),
-        author: Joi.string().required(),
-        tags: Joi.array().min(1).max(3).items(Joi.string()),
-        isPublished: Joi.boolean(),
-        price: Joi.number().required()
-    });
-    return schema.validate(course);
-}
 
 module.exports = router;
