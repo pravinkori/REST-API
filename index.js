@@ -5,6 +5,7 @@ const helmet = require('helmet');
 const express = require("express");
 const mongoose = require('mongoose');
 const courses = require('./routes/courses');
+const customers = require('./routes/customers');
 const home = require('./routes/home');
 
 const app = express();
@@ -14,11 +15,12 @@ const app = express();
 
 // Middleware
 app.use(express.json());
+app.use('/api/courses', courses);
+app.use('/api/customers', customers);
+app.use('/', home);
 // app.use(express.urlencoded({ extended: false }));
 app.use(express.static('public'));
 app.use(helmet());
-app.use('/api/courses', courses);
-app.use('/', home);
 
 // Configuration of environment
 console.log(`Application Name: ${ config.get('name') }`);
